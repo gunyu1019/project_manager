@@ -36,7 +36,9 @@ async def post_deploy():
     origin = repository.remotes.origin
     result = origin.pull()
 
-    
+    # 64 = Update (Success)
+    # 4 = Already to Update
+
 
     return make_response(
         jsonify({
