@@ -13,6 +13,8 @@ try:
 except ModuleNotFoundError:
     raise ModuleNotFoundError("The dbus package was not found. Disable systemd control.")
 
+from models.systemd_package import SystemdPackage
+
 bp = Blueprint(
     name="dbus_manager",
     import_name="dbus_manager",
@@ -25,16 +27,18 @@ systemd1 = sysbus.get_object('org.freedesktop.systemd1',  '/org/freedesktop/syst
 manager = dbus.Interface(systemd1, 'org.freedesktop.systemd1.Manager')
 
 
-async def systemctl_status(package_name: str):
-    return
-
-
-async def systemctl_restart():
-    pass
-
-
 @bp.route('/status', methods=['GET'])
 @exist_project
 async def get_status():
     query = req.args
-    
+    project_id = query.get("id")
+
+    service = SystemdPackage(sysbus, manager, project_id)
+    return make_response(
+        jsonify({
+            "current_memory": service.memory_usage.real, 
+            "pid": service.pid.real,
+            "state": service.state.real,
+            "uptime": service.uptime.real
+        })
+    )
