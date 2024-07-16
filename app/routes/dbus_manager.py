@@ -13,7 +13,7 @@ try:
 except ModuleNotFoundError:
     raise ModuleNotFoundError("The dbus package was not found. Disable systemd control.")
 
-from models.systemd_package import SystemdPackage
+from ..models.systemd_package import SystemdPackage
 
 bp = Blueprint(
     name="dbus_manager",
