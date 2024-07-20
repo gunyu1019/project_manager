@@ -19,7 +19,11 @@ class SystemdPackage:
         self._system_bus = system_bus
         self._manager = manager
 
-        self._obj_path = manager.GetUnit(package_name)
+        try:
+            self._obj_path = manager.GetUnit(package_name)
+        except dbus.DBusException:  # Depends on disk data.
+            self._obj_path = manager.LoadUnit(package_name)
+
         self._service = system_bus.get_object('org.freedesktop.systemd1', object_path=self._obj_path)
 
     @property
