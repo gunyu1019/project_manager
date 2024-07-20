@@ -3,6 +3,7 @@ from flask import Blueprint
 from flask import jsonify
 from flask import make_response
 from flask import request as req
+from typing import List
 
 from app.config.config import get_config
 from app.validate import authorization, exist_project
@@ -18,7 +19,7 @@ project_parser = get_config('project')
 @bp.route('/deploy', methods=['GET'])
 @exist_project
 @authorization
-async def post_deploy():
+def post_deploy():
     query = req.args
     project_id = query.get("project_id")
 
@@ -34,7 +35,7 @@ async def post_deploy():
     repository = git.Repo(project_path)
     origin: git.Remote = repository.remotes.origin
     origin = origin.update()
-    results: list[git.FetchInfo] = origin.pull()
+    results: List[git.FetchInfo] = origin.pull()
 
     if len(results) == 0:
         return make_response(
