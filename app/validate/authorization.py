@@ -33,7 +33,7 @@ def authorization(func: Callable[..., Response]):
         project_id = query.get("project_id")
         if (
             query.get('project_tk') != project_parser.get(project_id, "token") or
-            query.get('token') != parser.get("authorization", "manage_token") 
+            query.get('token') != parser.get("Default", "token")
         ):
             return make_response(
                 jsonify({
