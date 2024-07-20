@@ -26,7 +26,7 @@ def exist_project(func: Callable[..., Response]):
                 jsonify({
                     "CODE": 400,
                     "MESSAGE": "Missing project ID."
-                })
+                }), 400
             )
 
         return func()
