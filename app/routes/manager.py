@@ -43,13 +43,20 @@ def get_status():
         started_time = datetime.datetime.fromtimestamp(service.uptime.real // 1000000)
         now_time = datetime.datetime.now()
 
+        if str(service.state) == "active":
+            return make_response(
+                jsonify({
+                    "current_memory": service.memory_usage.real,
+                    "pid": service.pid.real,
+                    "state": str(service.state),
+                    "started": started_time.isoformat(),
+                    "uptime": (now_time - started_time).total_seconds()
+                }), 200
+            )
+
         return make_response(
             jsonify({
-                "current_memory": service.memory_usage.real,
-                "pid": service.pid.real,
-                "state": str(service.state),
-                "started": started_time.isoformat(),
-                "uptime": (now_time - started_time).total_seconds()
+                "state": str(service.state)
             }), 200
         )
     else:
