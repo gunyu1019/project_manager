@@ -62,6 +62,34 @@ def get_status():
         )
 
 
+@bp.route("/state", methods=["GET"])
+@automatic_exist_project
+def get_state():
+    query = req.args
+    project_id = query.get("project_id")
+    project_type = parser.get(project_id, "type")
+
+    if project_type == "systemctl":
+        project_package_id = parser.get(project_id, "package_id")
+        service = SystemdPackage(sysbus, manager, project_package_id)
+        if str(service.state) == "active":
+            return make_response("0", 200)
+        elif str(service.state) == "reloading":
+            return make_response("12", 200)
+        elif str(service.state) == "inactive":
+            return make_response("13", 200)  # Stop
+        elif str(service.state) == "failed":
+            return make_response("14", 200)  # Exception Caused
+        elif str(service.state) == "activating":
+            return make_response("15", 200)
+        elif str(service.state) == "deactivating":
+            return make_response("16", 200)
+        else:
+            return make_response("17", 400)
+    else:
+        return make_response("11", 400)  # Unknown Project Type.
+
+
 @bp.route("/restart", methods=["GET"])
 @exist_project
 @authorization
@@ -77,4 +105,4 @@ def post_restart():
 
         return make_response("0", 200)
     else:
-        return make_response("11", 200)  # Unknown Project Type.
+        return make_response("11", 400)  # Unknown Project Type.
