@@ -10,9 +10,10 @@ jobs:
     steps:
       - name: Deploy to Virtual Private Server(VPS)
         run: |
-          deployment_response = $(curl http://deployment1.yhs.kr:5000/deploy?project_id=${{ env.ProjectID }}
-            -H 'Project-Token: {{ secrets.PROJECT_TOKEN }}'
+          deployment_response = $(curl http://deployment1.yhs.kr:5000/deploy?project_id=${{ env.ProjectID }} \
+            -H 'Project-Token: {{ secrets.PROJECT_TOKEN }}' \
             -H 'Token: {{ secrets.TOKEN }}')
+          
           if [ $deployment_response -eq "11" ];  then
             echo "This project has disabled Automatic Continuous Deployment."
             exit 11
@@ -42,9 +43,10 @@ jobs:
           fi
       - name: Apply a New Version
         run: |
-          restart_response = $(curl http://deployment1.yhs.kr:5000/restart?project_id=${{ env.ProjectID }}
-            -H 'Project-Token: {{ secrets.PROJECT_TOKEN }}'
+          restart_response = $(curl http://deployment1.yhs.kr:5000/restart?project_id=${{ env.ProjectID }} \
+            -H 'Project-Token: {{ secrets.PROJECT_TOKEN }}' \
             -H 'Token: {{ secrets.TOKEN }}')
+          
           if [ $deployment_response -eq "11" ]; then
             echo "Unknown Project Type."
             exit 21
@@ -66,6 +68,7 @@ jobs:
       - name: Checking Status
         run: |
           state_response = $(curl http://deployment1.yhs.kr:5000/state?project_id=${{ env.ProjectID }}
+          
           if [ state_response -eq "0" ]; then
             echo "Success Deployment (Congratulations!)"
             exit 0
