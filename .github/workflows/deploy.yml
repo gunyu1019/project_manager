@@ -10,7 +10,7 @@ jobs:
     steps:
       - name: Deploy to Virtual Private Server(VPS)
         run: |
-          deployment_response = $(curl http://deployment1.yhs.kr:5000/deploy?project_id=${{ env.ProjectID }} \
+          deployment_response=$(curl http://deployment1.yhs.kr:5000/deploy?project_id=${{ env.ProjectID }} \
             -H 'Project-Token: {{ secrets.PROJECT_TOKEN }}' \
             -H 'Token: {{ secrets.TOKEN }}')
           
@@ -41,9 +41,10 @@ jobs:
             echo "Wrong Response."
             exit 1
           fi
+        shell: bash
       - name: Apply a New Version
         run: |
-          restart_response = $(curl http://deployment1.yhs.kr:5000/restart?project_id=${{ env.ProjectID }} \
+          restart_response=$(curl http://deployment1.yhs.kr:5000/restart?project_id=${{ env.ProjectID }} \
             -H 'Project-Token: {{ secrets.PROJECT_TOKEN }}' \
             -H 'Token: {{ secrets.TOKEN }}')
           
@@ -62,12 +63,13 @@ jobs:
             echo "Wrong Response."
             exit 2
           fi
+        shell: bash
       - name: Waiting for restart project (5 seconds minimum)
         run: sleep 5s
         shell: bash
       - name: Checking Status
         run: |
-          state_response = $(curl http://deployment1.yhs.kr:5000/state?project_id=${{ env.ProjectID }}
+          state_response=$(curl http://deployment1.yhs.kr:5000/state?project_id=${{ env.ProjectID }}
           
           if [ state_response -eq "0" ]; then
             echo "Success Deployment (Congratulations!)"
@@ -97,3 +99,4 @@ jobs:
             echo "Wrong Response."
             exit 3
           fi
+        shell: bash
