@@ -6,7 +6,7 @@ from flask import make_response
 from flask import request as req
 
 from app.config.config import get_config
-from app.validate import authorization, exist_project
+from app.validate import authorization, automatic_exist_project, exist_project
 
 try:
     import dbus
@@ -16,21 +16,19 @@ else:
     from app.models.systemd_package import SystemdPackage
 
     sysbus = dbus.SystemBus()
-    systemd1 = sysbus.get_object('org.freedesktop.systemd1', '/org/freedesktop/systemd1')
-    manager = dbus.Interface(systemd1, 'org.freedesktop.systemd1.Manager')
+    systemd1 = sysbus.get_object(
+        "org.freedesktop.systemd1", "/org/freedesktop/systemd1"
+    )
+    manager = dbus.Interface(systemd1, "org.freedesktop.systemd1.Manager")
 
     dbus = True  # Systemctl manage enabled.
 
-bp = Blueprint(
-    name="manager",
-    import_name="manager",
-    url_prefix="/"
-)
-parser = get_config('project')
+bp = Blueprint(name="manager", import_name="manager", url_prefix="/")
+parser = get_config("project")
 
 
-@bp.route('/status', methods=['GET'])
-@exist_project
+@bp.route("/status", methods=["GET"])
+@automatic_exist_project
 def get_status():
     query = req.args
     project_id = query.get("project_id")
@@ -45,30 +43,26 @@ def get_status():
 
         if str(service.state) == "active":
             return make_response(
-                jsonify({
-                    "current_memory": service.memory_usage.real,
-                    "pid": service.pid.real,
-                    "state": str(service.state),
-                    "started": started_time.isoformat(),
-                    "uptime": (now_time - started_time).total_seconds()
-                }), 200
+                jsonify(
+                    {
+                        "current_memory": service.memory_usage.real,
+                        "pid": service.pid.real,
+                        "state": str(service.state),
+                        "started": started_time.isoformat(),
+                        "uptime": (now_time - started_time).total_seconds(),
+                    }
+                ),
+                200,
             )
 
-        return make_response(
-            jsonify({
-                "state": str(service.state)
-            }), 200
-        )
+        return make_response(jsonify({"state": str(service.state)}), 200)
     else:
         return make_response(
-            jsonify({
-                "CODE": 400,
-                "MESSAGE": "Unknown Project Type."
-            }), 400
+            jsonify({"CODE": 400, "MESSAGE": "Unknown Project Type."}), 400
         )
 
 
-@bp.route('/restart', methods=['GET'])
+@bp.route("/restart", methods=["GET"])
 @exist_project
 @authorization
 def post_restart():
@@ -81,15 +75,6 @@ def post_restart():
         service = SystemdPackage(sysbus, manager, project_package_id)
         service.restart()
 
-        return make_response(
-            jsonify({
-                "status": "OK"
-            }), 200
-        )
+        return make_response("0", 200)
     else:
-        return make_response(
-            jsonify({
-                "CODE": 400,
-                "MESSAGE": "Unknown Project Type."
-            }), 400
-        )
+        return make_response("11", 200)  # Unknown Project Type.
