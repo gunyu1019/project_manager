@@ -8,13 +8,13 @@ from app.directory import directory
 
 def create_app():
     app = Flask(__name__)
-    app.config['JSON_AS_ASCII'] = False
+    app.config["JSON_AS_ASCII"] = False
     log = logging.getLogger("app.create_app")
 
     routes = [
-        "app.routes." + file[:-3] for file in os.listdir(
-            os.path.join(directory, "routes")
-        ) if file.endswith(".py")
+        "app.routes." + file[:-3]
+        for file in os.listdir(os.path.join(directory, "routes"))
+        if file.endswith(".py")
     ]
     for route in routes:
         spec = importlib.util.find_spec(route)
@@ -30,7 +30,7 @@ def create_app():
             continue
 
         try:
-            blueprint = getattr(lib, 'bp')
+            blueprint = getattr(lib, "bp")
         except AttributeError:
             log.error("No Entry Point Error: {0}".format(route))
             continue
