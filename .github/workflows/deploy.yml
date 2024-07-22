@@ -10,7 +10,7 @@ jobs:
     steps:
       - name: Deploy to Virtual Private Server(VPS)
         run: |
-          deployment_response = $(curl http://deployment1.yhs.kr/deploy?project_id=${{ env.ProjectID }}
+          deployment_response = $(curl http://deployment1.yhs.kr:5000/deploy?project_id=${{ env.ProjectID }}
             -H 'Project-Token: {{ secrets.PROJECT_TOKEN }}'
             -H 'Token: {{ secrets.TOKEN }}')
           if [ $deployment_response -eq "11" ];  then
@@ -42,7 +42,7 @@ jobs:
           fi
       - name: Apply a New Version
         run: |
-          restart_response = $(curl http://deployment1.yhs.kr/restart?project_id=${{ env.ProjectID }}
+          restart_response = $(curl http://deployment1.yhs.kr:5000/restart?project_id=${{ env.ProjectID }}
             -H 'Project-Token: {{ secrets.PROJECT_TOKEN }}'
             -H 'Token: {{ secrets.TOKEN }}')
           if [ $deployment_response -eq "11" ]; then
@@ -65,7 +65,7 @@ jobs:
         shell: bash
       - name: Checking Status
         run: |
-          state_response = $(curl http://deployment1.yhs.kr/state?project_id=${{ env.ProjectID }}
+          state_response = $(curl http://deployment1.yhs.kr:5000/state?project_id=${{ env.ProjectID }}
           if [ state_response -eq "0" ]; then
             echo "Success Deployment (Congratulations!)"
             exit 0
