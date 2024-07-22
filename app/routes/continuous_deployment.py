@@ -11,7 +11,7 @@ from app.validate import authorization, exist_project
 bp = Blueprint(
     name="continuous_deployment",
     import_name="continuous_deployment",
-    url_prefix="/deploy"
+    url_prefix="/"
 )
 project_parser = get_config('project')
 
@@ -34,7 +34,6 @@ def post_deploy():
     project_path = project_parser.get(project_id, "directory")
     repository = git.Repo(project_path)
     origin: git.Remote = repository.remotes.origin
-    origin = origin.update()
     results: List[git.FetchInfo] = origin.pull()
 
     if len(results) == 0:
@@ -72,6 +71,7 @@ def post_deploy():
         return make_response(
             jsonify({
                 "CODE": 200,
+                "FLAG": result.flags,
                 "MESSAGE": "Success Deployment"
             }), 200
         )
