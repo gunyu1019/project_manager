@@ -48,16 +48,16 @@ jobs:
             -H 'Project-Token: ${{ secrets.PROJECT_TOKEN }}' \
             -H 'Token: ${{ secrets.TOKEN }}')
           
-          if [ $deployment_response -eq "11" ]; then
+          if [ $restart_response -eq "11" ]; then
             echo "Unknown Project Type."
             exit 21
-          elif [ $deployment_response -eq "43" ]; then
+          elif [ $restart_response -eq "43" ]; then
             echo "Forbidden Access."
             exit 43
-          elif [ $deployment_response -eq "44" ]; then
+          elif [ $restart_response -eq "44" ]; then
             echo "Not Found."
             exit 44
-          elif [ $deployment_response -eq "0" ]; then
+          elif [ $restart_response -eq "0" ]; then
             echo "Success Apply a New Version."
           else
             echo "Wrong Response."
@@ -71,28 +71,28 @@ jobs:
         run: |
           state_response=$(curl http://deployment1.yhs.kr:8000/state?project_id=${{ env.ProjectID }}
           
-          if [ state_response -eq "0" ]; then
+          if [ $state_response -eq "0" ]; then
             echo "Success Deployment (Congratulations!)"
             exit 0
-          elif [ state_response -eq "15" ]; then
+          elif [ $state_response -eq "15" ]; then
             echo "Success Deployment (but still turning on)"
             exit 0
-          elif [ state_response -eq "12" ]; then
+          elif [ $state_response -eq "12" ]; then
             echo "Success Deployment However, You need verify that it works."
             exit 0
-          elif [ $deployment_response -eq "13" ]; then
+          elif [ $state_response -eq "13" ]; then
             echo "Failure Deployment Please check the logs."
             exit 33
-          elif [ $deployment_response -eq "14" ]; then
+          elif [ $state_response -eq "14" ]; then
             echo "Failure Deployment Please check the logs."
             exit 34
-          elif [ $deployment_response -eq "16" ]; then
+          elif [ $state_response -eq "16" ]; then
             echo "Failure Deployment Please check the logs."
             exit 36
-          elif [ $deployment_response -eq "17" ]; then
+          elif [ $state_response -eq "17" ]; then
             echo "Unknown Project Status Flags."
             exit 37
-          elif [ $deployment_response -eq "11" ]; then
+          elif [ $state_response -eq "11" ]; then
             echo "Unknown Project Type."
             exit 31
           else
