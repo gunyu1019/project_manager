@@ -11,16 +11,29 @@ from app.config.config import get_config
 if TYPE_CHECKING:
     from flask import Response
 
-project_parser = get_config('project')
+project_parser = get_config("project")
 
 
 def exist_project(func: Callable[..., Response]):
     @functools.wraps(func)
     def wrapper():
         query = req.args
-        if (
-            "project_id" not in query or 
-            not project_parser.has_section(query.get('project_id'))
+        if "project_id" not in query or not project_parser.has_section(
+            query.get("project_id")
+        ):
+            return make_response("44", 404)  # Missing project ID.
+
+        return func()
+
+    return wrapper
+
+
+def automatic_exist_project(func: Callable[..., Response]):
+    @functools.wraps(func)
+    def wrapper():
+        query = req.args
+        if "project_id" not in query or not project_parser.has_section(
+            query.get("project_id")
         ):
             return make_response(
                 jsonify({
@@ -30,4 +43,5 @@ def exist_project(func: Callable[..., Response]):
             )
 
         return func()
+
     return wrapper
