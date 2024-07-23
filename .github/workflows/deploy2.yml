@@ -1,0 +1,103 @@
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      ProjectID: project_manager
+      Host: https://deployment3.yhs.kr
+    steps:
+      - name: Deploy to Virtual Private Server(VPS)
+        run: |
+          deployment_response=$(curl ${{ env.Host }}/deploy?project_id=${{ env.ProjectID }} \
+            -H 'Project-Token: ${{ secrets.PROJECT_TOKEN }}' \
+            -H 'Token: ${{ secrets.DEPLOYMENT3_TOKEN }}')
+          
+          if [ $deployment_response -eq "11" ];  then
+            echo "This project has disabled Automatic Continuous Deployment."
+            exit 11
+          elif [ $deployment_response -eq "12" ]; then
+            echo "No fetch result."
+            exit 12
+          elif [ $deployment_response -eq "13" ]; then
+            echo "Already Update"
+            exit 13
+          elif [ $deployment_response -eq "14" ]; then
+            echo "An error occurred during pull request."
+            exit 14
+          elif [ $deployment_response -eq "15" ]; then
+            echo "Unknown flags."
+            exit 15
+          elif [ $deployment_response -eq "43" ]; then
+            echo "Forbidden Access."
+            exit 43
+          elif [ $deployment_response -eq "44" ]; then
+            echo "Not Found."
+            exit 44
+          elif [ $deployment_response -eq "0" ]; then
+            echo "Success Deployment"
+          else
+            echo "Wrong Response."
+            exit 1
+          fi
+        shell: bash
+      - name: Apply a New Version
+        run: |
+          restart_response=$(curl ${{ env.Host }}/restart?project_id=${{ env.ProjectID }} \
+            -H 'Project-Token: ${{ secrets.PROJECT_TOKEN }}' \
+            -H 'Token: ${{ secrets.TOKEN }}')
+          
+          if [ $restart_response -eq "11" ]; then
+            echo "Unknown Project Type."
+            exit 21
+          elif [ $restart_response -eq "43" ]; then
+            echo "Forbidden Access."
+            exit 43
+          elif [ $restart_response -eq "44" ]; then
+            echo "Not Found."
+            exit 44
+          elif [ $restart_response -eq "0" ]; then
+            echo "Success Apply a New Version."
+          else
+            echo "Wrong Response."
+            exit 2
+          fi
+        shell: bash
+      - name: Waiting for restart project (5 seconds minimum)
+        run: sleep 5s
+        shell: bash
+      - name: Checking Status
+        run: |
+          state_response=$(curl ${{ env.Host }}/state?project_id=${{ env.ProjectID }})
+          
+          if [ $state_response -eq "0" ]; then
+            echo "Success Deployment (Congratulations!)"
+            exit 0
+          elif [ $state_response -eq "15" ]; then
+            echo "Success Deployment (but still turning on)"
+            exit 0
+          elif [ $state_response -eq "12" ]; then
+            echo "Success Deployment However, You need verify that it works."
+            exit 0
+          elif [ $state_response -eq "13" ]; then
+            echo "Failure Deployment Please check the logs."
+            exit 33
+          elif [ $state_response -eq "14" ]; then
+            echo "Failure Deployment Please check the logs."
+            exit 34
+          elif [ $state_response -eq "16" ]; then
+            echo "Failure Deployment Please check the logs."
+            exit 36
+          elif [ $state_response -eq "17" ]; then
+            echo "Unknown Project Status Flags."
+            exit 37
+          elif [ $state_response -eq "11" ]; then
+            echo "Unknown Project Type."
+            exit 31
+          else
+            echo "Wrong Response."
+            exit 3
+          fi
+        shell: bash
