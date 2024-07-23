@@ -47,7 +47,7 @@ jobs:
         run: |
           restart_response=$(curl ${{ env.Host }}/restart?project_id=${{ env.ProjectID }} \
             -H 'Project-Token: ${{ secrets.PROJECT_TOKEN }}' \
-            -H 'Token: ${{ secrets.TOKEN }}')
+            -H 'Token: ${{ secrets.DEPLOYMENT2_TOKEN }}')
           
           if [ $restart_response -eq "11" ]; then
             echo "Unknown Project Type."
