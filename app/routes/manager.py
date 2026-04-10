@@ -23,6 +23,14 @@ else:
 
     dbus = True  # Systemctl manage enabled.
 
+try:
+    import docker
+except ModuleNotFoundError:
+    docker = False  # Docker manage disabled.
+else:
+    docker_manager = docker.from_env()
+    docker = True  # Docker manage enabled.
+
 bp = Blueprint(name="manager", import_name="manager", url_prefix="/")
 parser = get_config("project")
 
