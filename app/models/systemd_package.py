@@ -1,5 +1,7 @@
 import dbus
 
+from .base_package import BasePackage
+
 
 SYSTEMD_UNIT = "org.freedesktop.systemd1.Unit"
 SYSTEMD_SERVICE = "org.freedesktop.systemd1.Service"
@@ -7,10 +9,9 @@ SYSTEMD_SERVICE = "org.freedesktop.systemd1.Service"
 DBUS_PROPERTIES = "org.freedesktop.DBus.Properties"
 
 
-class SystemdPackage:
-    def __init__(
-        self, system_bus: dbus.SystemBus, manager: dbus.Interface, package_name: str
-    ):
+class SystemdPackage(BasePackage):
+    def __init__(self, system_bus: dbus.SystemBus, manager: dbus.Interface, package_name: str):
+        super().__init__(package_name)
         self.package_name = package_name
 
         self._system_bus = system_bus
