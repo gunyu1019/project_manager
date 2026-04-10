@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ProjectID: project_manager
-      Host: https://deployment2.yhs.kr
+      Host: https://deployment4.yhs.kr
     steps:
       - name: Deploy to Virtual Private Server(VPS)
         run: |
