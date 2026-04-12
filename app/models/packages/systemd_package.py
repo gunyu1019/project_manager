@@ -47,7 +47,7 @@ class SystemdPackage(BasePackage):
         """Return state of the service.
 
         The following states are currently defined:
-        "active", "reloading", "inactive", "failed", "activating", and "deactivating
+        "active", "reloading", "inactive", "failed", "activating", and "deactivating"
         """
         return self._property_interface.Get(SYSTEMD_UNIT, "ActiveState")
 
