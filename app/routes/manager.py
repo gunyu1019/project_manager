@@ -5,7 +5,7 @@ from flask import jsonify
 from flask import make_response
 from flask import request as req
 
-from app import get_config
+from app.config import get_config
 from app.models.state import ProjectState
 from app.validate import authorization, automatic_exist_project, exist_project
 
