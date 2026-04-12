@@ -13,7 +13,7 @@ def create_app():
 
     routes = [
         "app.routes." + file[:-3]
-        for file in os.listdir(os.path.join(directory, "routes"))
+        for file in os.listdir(os.path.join(directory, "app", "routes"))
         if file.endswith(".py")
     ]
     for route in routes:
