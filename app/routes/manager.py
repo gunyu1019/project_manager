@@ -5,15 +5,19 @@ from flask import jsonify
 from flask import make_response
 from flask import request as req
 
-from app.config.config import get_config
+from app import get_config
+from app.models.state import ProjectState
 from app.validate import authorization, automatic_exist_project, exist_project
 
 try:
     import dbus
 except ModuleNotFoundError:
     dbus = False  # Systemctl manage disabled.
+
+    SystemdPackage = None
+    manager = None
 else:
-    from app.models.systemd_package import SystemdPackage
+    from app.models.packages.systemd_package import SystemdPackage
 
     sysbus = dbus.SystemBus()
     systemd1 = sysbus.get_object(
@@ -27,7 +31,12 @@ try:
     import docker
 except ModuleNotFoundError:
     docker = False  # Docker manage disabled.
+
+    DockerPackage = None
+    docker_manager = None
 else:
+    from app.models.packages.docker_package import DockerPackage
+
     docker_manager = docker.from_env()
     docker = True  # Docker manage enabled.
 
@@ -42,7 +51,7 @@ def get_status():
     project_id = query.get("project_id")
     project_type = parser.get(project_id, "type")
 
-    if project_type == "systemctl":
+    if project_type == "systemctl" and dbus:
         project_package_id = parser.get(project_id, "package_id")
         service = SystemdPackage(sysbus, manager, project_package_id)
 
@@ -77,36 +86,27 @@ def get_state():
     project_id = query.get("project_id")
     project_type = parser.get(project_id, "type")
 
-    if project_type == "systemctl":
+    if project_type == "systemctl" and dbus:
         project_package_id = parser.get(project_id, "package_id")
         service = SystemdPackage(sysbus, manager, project_package_id)
-        if str(service.state) == "active":
-            return make_response("0", 200)
-        elif str(service.state) == "reloading":
-            return make_response("12", 200)
-        elif str(service.state) == "inactive":
-            return make_response("13", 200)  # Stop
-        elif str(service.state) == "failed":
-            return make_response("14", 200)  # Exception Caused
-        elif str(service.state) == "activating":
-            return make_response("15", 200)
-        elif str(service.state) == "deactivating":
-            return make_response("16", 200)
-        else:
-            return make_response("17", 400)
+        state = ProjectState.from_systemd_state(str(service.state))
+        return make_response(f"{state.value}", 200)
+    elif project_type == "docker" and docker:
+        pass
     else:
         return make_response("11", 400)  # Unknown Project Type.
 
 
-@bp.route("/restart", methods=["GET"])
+@bp.route("/restart", methods=["GET", "POST"])
 @exist_project
 @authorization
 def post_restart():
     query = req.args
     project_id = query.get("project_id")
+    is_update = query.get(project_id, "is_update", False)
     project_type = parser.get(project_id, "type")
 
-    if project_type == "systemctl":
+    if project_type == "systemctl" and dbus:
         project_package_id = parser.get(project_id, "package_id")
         service = SystemdPackage(sysbus, manager, project_package_id)
         service.restart()
