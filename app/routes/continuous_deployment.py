@@ -6,7 +6,7 @@ from flask import jsonify
 from flask import make_response
 from flask import request as req
 
-from app.config.config import get_config
+from app.config import get_config
 from app.validate import authorization, exist_project
 
 bp = Blueprint(

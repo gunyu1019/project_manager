@@ -6,7 +6,7 @@ from flask import make_response
 from flask import jsonify
 from typing import Callable, TYPE_CHECKING
 
-from app.config.config import get_config
+from app.config import get_config
 
 if TYPE_CHECKING:
     from flask import Response

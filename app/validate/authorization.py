@@ -7,7 +7,7 @@ from flask import jsonify
 from flask import make_response
 from flask import request as req
 
-from app.config.config import get_config
+from app.config import get_config
 
 if TYPE_CHECKING:
     from flask import Response
