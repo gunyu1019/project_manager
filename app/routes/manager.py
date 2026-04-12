@@ -55,28 +55,42 @@ def get_status():
         project_package_id = parser.get(project_id, "package_id")
         service = SystemdPackage(sysbus, manager, project_package_id)
 
+        state = ProjectState.from_systemd_state(str(service.state))
         started_time = datetime.datetime.fromtimestamp(service.uptime.real // 1000000)
         now_time = datetime.datetime.now()
 
-        if str(service.state) == "active":
-            return make_response(
-                jsonify(
-                    {
-                        "current_memory": service.memory_usage.real,
-                        "pid": service.pid.real,
-                        "state": str(service.state),
-                        "started": started_time.isoformat(),
-                        "uptime": (now_time - started_time).total_seconds(),
-                    }
-                ),
-                200,
-            )
+        current_memory = service.memory_usage.real
+        pid = service.pid.real
+    elif project_type == "docker" and docker:
+        project_package_id = parser.get(project_id, "package_id")
+        service = DockerPackage.from_container_name(project_package_id, docker_manager)
 
-        return make_response(jsonify({"state": str(service.state)}), 200)
+        state = ProjectState.from_docker_state(str(service.state))
+        started_time = datetime.datetime.fromtimestamp(service.uptime // 1000000)
+        now_time = datetime.datetime.now()
+
+        current_memory = service.memory_usage
+        pid = service.pid
     else:
         return make_response(
             jsonify({"CODE": 400, "MESSAGE": "Unknown Project Type."}), 400
         )
+
+    if state == ProjectState.RUNNING:
+        return make_response(
+            jsonify(
+                {
+                    "current_memory": current_memory,
+                    "pid": pid,
+                    "state": state.name,
+                    "started": started_time.isoformat(),
+                    "uptime": (now_time - started_time).total_seconds(),
+                }
+            ),
+            200,
+        )
+
+    return make_response(jsonify({"state": state.name}), 200)
 
 
 @bp.route("/state", methods=["GET"])
@@ -92,7 +106,11 @@ def get_state():
         state = ProjectState.from_systemd_state(str(service.state))
         return make_response(f"{state.value}", 200)
     elif project_type == "docker" and docker:
-        pass
+        project_package_id = parser.get(project_id, "package_id")
+        service = DockerPackage.from_container_name(project_package_id, docker_manager)
+        state = ProjectState.from_docker_state(str(service.state))
+
+        return make_response(f"{state.value}", 200)
     else:
         return make_response("11", 400)  # Unknown Project Type.
 
@@ -110,6 +128,12 @@ def post_restart():
         project_package_id = parser.get(project_id, "package_id")
         service = SystemdPackage(sysbus, manager, project_package_id)
         service.restart()
+
+        return make_response("0", 200)
+    elif project_type == "docker" and docker:
+        project_package_id = parser.get(project_id, "package_id")
+        service = DockerPackage.from_container_name(project_package_id, docker_manager)
+        service.restart(is_update)
 
         return make_response("0", 200)
     else:
